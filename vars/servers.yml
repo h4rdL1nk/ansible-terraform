@@ -3,22 +3,31 @@
 servers:
   webservers:
     - name: app-ws
-      count: 4
+      count: 1
       meta:
         env: play
         app: apache
+      specs:
+        image: TID-RH7-3NIC.20171006
+        flavor: TID-01CPU-512MB-20GB
+      networks:
+        - management
+        - internet
       security_groups:
         - ssh-access
-        - webserver-access
+        - web-access
+
   mongodb:
     - name: mongo-rs0
-      count: 3
+      count: 2
       meta:
         env: play
         app: mongo
+      specs:
+        image: TID-RH7-3NIC.20171006
+        flavor: TID-01CPU-512MB-20GB
       networks:
-        - DOCKER_MGMT
-        - DOCKER_INET
+        - management
       security_groups:
         - ssh-access
         - mongo-access

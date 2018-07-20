@@ -1,0 +1,56 @@
+{% if routers is defined %}
+{% for router in routers %}
+resource "openstack_networking_router_v2" "{{ router.name }}" {
+  name                = "{{ router.name }}"
+  admin_state_up      = "true"
+  external_network_id = "{{ router.external_network }}"
+}
+{% endfor %}
+{% endif %}
+
+{% if networks is defined %}
+{% for network in networks %}
+resource "openstack_networking_network_v2" "{{ network.name }}" {
+  name           = "{{ network.name }}"
+  admin_state_up = "true"
+}
+
+resource "openstack_networking_subnet_v2" "{{ network.name }}-subnets" {
+  count            = {{ network.subnets.number }}
+  name             = "{{ network.name }}-${count.index}"
+  network_id       = "${openstack_networking_network_v2.{{ network.name }}.id}"
+  cidr             = "${cidrsubnet("{{ network.cidr }}","{{ network.subnets.bits }}",count.index)}"
+  dns_nameservers = [{% for nameserver in network.nameservers %}"{{ nameserver }}"{% if loop.index < network.nameservers|length %},{% endif %}{% endfor %}]
+  ip_version       = 4
+}
+
+{% for router in network.routers %}
+resource "openstack_networking_router_interface_v2" "{{ network.name }}-{{ router }}" {
+  count     = {{ network.subnets.number }}
+  router_id = "${openstack_networking_router_v2.{{ router }}.id}"
+  subnet_id = "${element(openstack_networking_subnet_v2.{{ network.name }}-subnets.*.id,count.index)}"
+}
+{% endfor %}
+
+{% endfor %}
+{% endif%}
+
+{% if security_groups is defined %}
+{% for security_group in security_groups %}
+resource "openstack_compute_secgroup_v2" "{{ security_group.name }}" {
+  name        = "{{ security_group.name }}"
+  description = "{{ security_group.desc }}"
+
+{% for rule in security_group.rules %}
+  rule {
+    from_port   = {{ rule.from }}
+    to_port     = {{ rule.to }}
+    ip_protocol = "{{ rule.proto }}"
+    cidr        = "{{ rule.cidr }}"
+  }
+
+{% endfor %}
+}
+
+{% endfor %}
+{% endif %}

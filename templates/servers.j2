@@ -1,11 +1,16 @@
+//resource "openstack_compute_keypair_v2" "main" {
+//  name       = "test-keypair"
+//  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFNX+IDFYG+s3BHxkVwtBmW3GtXNVNQK39UJXOLpQQ+xkruaxL+/+gIXXaHdUm2v9rFumPtd2cSXKVM1xN0gKZAo6hmdHKNnkTUbinkVOw4N+Knm6+UF8ChbtZCCtPtPA1aF7HehgIBtBEUyffxk7aX308tgp1Z3yu9IzomXyMEeL/x+BYhtfNbgJ+HbFIDwSIIvqNQso2Dx25FFShPT+4DmkbTwXSOAmcZNarb0yVg1CkPvj4uWreWjLY4ZJmUuLamMkenzYiD0whtqOqhgT77HCLc1HKJJ+jmowSBxXpuphbePs1bSCxcratKIdPLds4LfRm5+XYjPFDw/VUOC+Z"
+//}
+
 {% for srvgroup, value in servers.iteritems() %}
 {% for server in servers[srvgroup] %}
 resource "openstack_compute_instance_v2" "{{ srvgroup }}" {
   count           = {{ server.count }}
   name            = "{{ server.name }}-${count.index}"
-  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
-  flavor_id       = "3"
-  key_pair        = "my_key_pair_name"
+  image_name      = "{{ server.specs.image }}"
+  flavor_name     = "{{ server.specs.flavor }}"
+  key_pair        = "test-keypair"
 {% if server.security_groups is defined %}
   security_groups = [{% for secgroup in server.security_groups %}"{{ secgroup }}"{% if loop.index < server.security_groups|length %},{% endif %}{% endfor %}]
 {% endif %}
@@ -26,6 +31,9 @@ resource "openstack_compute_instance_v2" "{{ srvgroup }}" {
 
 {% endfor %}
 {% endif %}
+
+  depends_on = [{% for network in server.networks %}"openstack_networking_subnet_v2.{{ network}}-subnets"{% if loop.index < server.networks|length %},{% endif %}{% endfor %}]
+
 }
 
 {% endfor %}

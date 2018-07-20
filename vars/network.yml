@@ -1,0 +1,68 @@
+---
+
+routers:
+  - name: management
+    external_network: 7dd8d467-9668-4e5a-8983-3620bd594e37
+
+  - name: internet
+    external_network: 72ee3aab-e02a-4572-af36-f5e36a475430
+    
+networks:
+  - name: management
+    cidr: 192.168.2.0/24
+    subnets:
+      number: 2
+      bits: 3
+    nameservers:
+      - 10.95.121.180
+      - 10.95.48.36
+    routers:
+      - management
+
+  - name: internet
+    cidr: 192.168.3.0/24
+    subnets:
+      number: 2
+      bits: 3
+    nameservers:
+      - 10.95.121.180
+      - 10.95.48.36
+    routers:
+      - internet
+
+security_groups:
+  - name: ssh-access
+    desc: "SSH access rules"
+    rules:
+      - from: 22
+        to: 22
+        proto: tcp
+        cidr: 0.0.0.0/0
+
+  - name: web-access
+    desc: "Webserver access rules"
+    rules:
+      - from: 80
+        to: 80
+        proto: tcp
+        cidr: 0.0.0.0/0
+      - from: 443
+        to: 443
+        proto: tcp
+        cidr: 0.0.0.0/0
+
+  - name: mongo-access
+    desc: "MongoDB server access rules"
+    rules:
+      - from: 27017
+        to: 27017
+        proto: tcp
+        cidr: 10.2.0.0/16
+      - from: 27017
+        to: 29017
+        proto: tcp
+        cidr: 10.2.0.0/16
+      - from: 27017
+        to: 30017
+        proto: tcp
+        cidr: 10.2.0.0/16
