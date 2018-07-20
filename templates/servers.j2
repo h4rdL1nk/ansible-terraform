@@ -1,0 +1,32 @@
+{% for srvgroup, value in servers.iteritems() %}
+{% for server in servers[srvgroup] %}
+resource "openstack_compute_instance_v2" "{{ srvgroup }}" {
+  count           = {{ server.count }}
+  name            = "{{ server.name }}-${count.index}"
+  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
+  flavor_id       = "3"
+  key_pair        = "my_key_pair_name"
+{% if server.security_groups is defined %}
+  security_groups = [{% for secgroup in server.security_groups %}"{{ secgroup }}"{% if loop.index < server.security_groups|length %},{% endif %}{% endfor %}]
+{% endif %}
+
+{% if server.meta is defined %}
+  metadata {
+{% for key, value in server.meta.iteritems() %}
+    {{ key }} = "{{ value }}"
+{% endfor %}
+  }
+{% endif %}
+
+{% if server.networks is defined %}
+{% for network in server.networks %}
+  network {
+    name = "{{ network }}"
+  }
+
+{% endfor %}
+{% endif %}
+}
+
+{% endfor %}
+{% endfor %}

@@ -1,0 +1,21 @@
+---
+
+- name: Generate terraform init file
+  hosts: 127.0.0.1
+  connection: local
+  vars_files:
+    - "{{ workdir }}/vars/servers.yml" 
+  tasks:
+    - name: Make prvider recipe
+      template:
+        src: "{{ workdir }}/templates/provider.j2"
+        dest: "{{ workdir }}/recipes/provider.tf"
+    - name: Make servers recipe
+      template:
+        src: "{{ workdir }}/templates/servers.j2"
+        dest: "{{ workdir }}/recipes/servers.tf"
+
+    #- name: Plan terraform
+    #  terraform:
+    #    project_path: "{{ workdir }}/recipes"
+    #    state: present

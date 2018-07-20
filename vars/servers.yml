@@ -1,0 +1,24 @@
+---
+
+servers:
+  webservers:
+    - name: app-ws
+      count: 4
+      meta:
+        env: play
+        app: apache
+      security_groups:
+        - ssh-access
+        - webserver-access
+  mongodb:
+    - name: mongo-rs0
+      count: 3
+      meta:
+        env: play
+        app: mongo
+      networks:
+        - DOCKER_MGMT
+        - DOCKER_INET
+      security_groups:
+        - ssh-access
+        - mongo-access
